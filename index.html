@@ -80,14 +80,15 @@
   .eyebrow{font-family:var(--mono);font-size:11px;color:var(--primary);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;font-weight:600;}
 
   /* CARDS & PANELS */
-  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;}
-  .stat-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;}
-  .stat-label{font-size:12px;color:var(--ink-soft);font-weight:500;margin-bottom:10px;}
-  .stat-value{font-family:var(--mono);font-size:24px;font-weight:600;letter-spacing:-0.02em;}
+  .stat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:28px;}
+  .stat-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;}
+  .stat-label{font-size:12px;color:var(--ink-soft);font-weight:500;margin-bottom:8px;}
+  .stat-value{font-family:var(--mono);font-size:20px;font-weight:600;letter-spacing:-0.02em;}
   .stat-value.danger{color:var(--red);}
   .stat-value.warn{color:var(--amber);}
-  .stat-value.good{color:var(--primary-dark);}
-  .stat-sub{font-size:11.5px;color:var(--ink-faint);margin-top:6px;}
+  .stat-value.good{color:var(--green);}
+  .stat-value.primary{color:var(--primary-dark);}
+  .stat-sub{font-size:11px;color:var(--ink-faint);margin-top:4px;}
 
   .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin-bottom:20px;}
   .panel-title{font-family:var(--display);font-weight:700;font-size:16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
@@ -113,6 +114,16 @@
   .sp-kucing{background:var(--purple-soft);color:var(--purple);}
   .sp-unggas{background:var(--mustard-soft);color:#8A6415;}
   .sp-semua{background:var(--green-soft);color:var(--green);}
+
+  .pay-badge{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:6px;font-family:var(--mono);}
+  .pay-tunai{background:var(--green-soft);color:var(--green);}
+  .pay-qris{background:var(--blue-soft);color:var(--blue);}
+
+  .status-badge{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:20px;}
+  .st-booking{background:var(--amber-soft);color:var(--amber);}
+  .st-proses{background:var(--blue-soft);color:var(--blue);}
+  .st-selesai{background:var(--green-soft);color:var(--green);}
+  .st-batal{background:var(--red-soft);color:var(--red);}
 
   .invoice-id{font-family:var(--mono);font-size:12px;color:var(--blue);font-weight:700;cursor:pointer;transition:all .15s ease;}
   .invoice-id:hover{text-decoration:underline;color:var(--primary-dark);}
@@ -242,7 +253,7 @@
       </div>
       <div>
         <div class="brand-text" id="sidebarStoreName">PawStock</div>
-        <div class="brand-sub">PAKAN · OBAT HEWAN</div>
+        <div class="brand-sub">PAKAN · OBAT · SERVICES</div>
       </div>
     </div>
 
@@ -263,6 +274,12 @@
         <span class="nav-left">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none"><path d="M6 3H18V21L15 19L12 21L9 19L6 21V3Z" stroke="currentColor" stroke-width="1.6"/><path d="M9 8H15M9 12H15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
           Transaksi
+        </span>
+      </div>
+      <div class="nav-item" data-view="layanan">
+        <span class="nav-left">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Grooming & Hotel
         </span>
       </div>
       <div class="nav-item" data-view="peringatan">
@@ -298,7 +315,7 @@
         <div>
           <div class="eyebrow">Ringkasan</div>
           <div class="page-title">Dashboard Petshop</div>
-          <div class="page-desc">Kondisi toko hari ini — omzet, grafik penjualan, stok kritis, dan produk yang butuh perhatian.</div>
+          <div class="page-desc">Kondisi toko hari ini — omzet, laba bersih, grafik penjualan, stok kritis, dan statistik.</div>
         </div>
         
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
@@ -318,6 +335,32 @@
       </div>
 
       <div class="stat-grid" id="statGrid"></div>
+
+      <!-- PANEL RINCIAN LABA RUGI -->
+      <div class="panel">
+        <div class="panel-title">
+          <span>Laporan Laba / Rugi Singkat</span>
+          <small id="labaSubTitle">Dihitung otomatis dari Omzet - HPP (Harga Beli) - Total Diskon</small>
+        </div>
+        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 14px; text-align: center; padding: 12px 0;">
+          <div style="border-right: 1px solid var(--line);">
+            <div style="font-size:12px; color:var(--ink-soft);">Total Omzet (Penjualan)</div>
+            <div style="font-family:var(--mono); font-size:18px; font-weight:700; color:var(--primary-dark);" id="lrOmzet">Rp 0</div>
+          </div>
+          <div style="border-right: 1px solid var(--line);">
+            <div style="font-size:12px; color:var(--ink-soft);">Total HPP (Harga Beli)</div>
+            <div style="font-family:var(--mono); font-size:18px; font-weight:700; color:var(--amber);" id="lrHpp">Rp 0</div>
+          </div>
+          <div style="border-right: 1px solid var(--line);">
+            <div style="font-size:12px; color:var(--ink-soft);">Total Potongan Diskon</div>
+            <div style="font-family:var(--mono); font-size:18px; font-weight:700; color:var(--red);" id="lrDiskon">Rp 0</div>
+          </div>
+          <div>
+            <div style="font-size:12px; color:var(--ink-soft);">Keuntungan Bersih (Laba)</div>
+            <div style="font-family:var(--mono); font-size:18px; font-weight:700; color:var(--green);" id="lrLaba">Rp 0</div>
+          </div>
+        </div>
+      </div>
 
       <!-- GRAFIK PENJUALAN -->
       <div class="panel">
@@ -405,7 +448,7 @@
       <div class="panel" style="padding:0; overflow-x:auto;">
         <table>
           <thead>
-            <tr><th>Produk</th><th>Kategori</th><th>Hewan</th><th>Masa Simpan</th><th>Stok</th><th>Harga Jual</th><th style="min-width:160px;">Aksi / Rekon</th></tr>
+            <tr><th>Produk</th><th>Kategori</th><th>Hewan</th><th>Masa Simpan</th><th>Stok</th><th>Harga Beli</th><th>Harga Jual</th><th style="min-width:160px;">Aksi / Rekon</th></tr>
           </thead>
           <tbody id="stokTableBody"></tbody>
         </table>
@@ -499,12 +542,40 @@
         </div>
       </div>
 
+      <!-- RIWAYAT TRANSAKSI DENGAN FILTER TANGGAL & METODE -->
       <div class="panel">
-        <div class="panel-title">Riwayat Transaksi <small id="omzetLabel"></small></div>
+        <div class="panel-title">
+          <span>Riwayat Transaksi</span>
+          <small id="omzetLabel"></small>
+        </div>
+
+        <!-- TOOLBAR FILTER RIWAYAT TRANSAKSI -->
+        <div class="toolbar" style="margin-bottom: 14px; background: var(--bg); padding: 12px; border-radius: 10px; border: 1px solid var(--line);">
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; flex:1;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="font-size:12px; font-weight:600; color:var(--ink-soft);">Dari:</span>
+              <input type="date" class="form-input" id="invFilterStart" style="padding:6px 10px; font-size:12px;" onchange="renderInvoices()">
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="font-size:12px; font-weight:600; color:var(--ink-soft);">S/d:</span>
+              <input type="date" class="form-input" id="invFilterEnd" style="padding:6px 10px; font-size:12px;" onchange="renderInvoices()">
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="font-size:12px; font-weight:600; color:var(--ink-soft);">Metode:</span>
+              <select class="form-select" id="invFilterMetode" style="padding:6px 10px; font-size:12px;" onchange="renderInvoices()">
+                <option value="">Semua Metode</option>
+                <option value="Tunai">Tunai</option>
+                <option value="QRIS">QRIS</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="resetInvFilters()">Reset Filter</button>
+        </div>
+
         <div style="overflow-x:auto;">
           <table>
             <thead>
-              <tr><th>ID Invoice</th><th>Waktu</th><th>Pembeli</th><th>Detail Items</th><th>Total</th><th>Struk</th></tr>
+              <tr><th>ID Invoice</th><th>Waktu</th><th>Pembeli</th><th>Detail Items</th><th>Metode</th><th>Total</th><th>Struk</th></tr>
             </thead>
             <tbody id="invoiceListBody"></tbody>
           </table>
@@ -512,7 +583,62 @@
       </div>
     </section>
 
-    <!-- 4. PERINGATAN -->
+    <!-- 4. LAYANAN GROOMING & PET HOTEL -->
+    <section class="view" id="view-layanan">
+      <div class="page-head">
+        <div>
+          <div class="eyebrow">Services</div>
+          <div class="page-title">Grooming & Pet Hotel</div>
+          <div class="page-desc">Kelola jadwal perawatan hewan, slot penitipan kandang, dan status progres pengerjaan.</div>
+        </div>
+        <button class="btn" onclick="toggleAddLayananForm()">+ Booking Baru</button>
+      </div>
+
+      <!-- FORM TAMBAH SERVICE -->
+      <div class="panel" id="addLayananPanel" style="display:none;">
+        <div class="panel-title">Catat Booking Grooming / Penitipan</div>
+        <div class="form-grid">
+          <div class="form-field"><label>Nama Hewan</label><input class="form-input" id="l-pet" placeholder="cth. Milo"></div>
+          <div class="form-field"><label>Jenis Hewan</label>
+            <select class="form-select" id="l-hewan">
+              <option value="kucing">Kucing</option>
+              <option value="anjing">Anjing</option>
+              <option value="kelinci">Kelinci / Lainnya</option>
+            </select>
+          </div>
+          <div class="form-field"><label>Nama Pemilik / No. HP</label><input class="form-input" id="l-pemilik" placeholder="cth. Budi (0812-3456-7890)"></div>
+          <div class="form-field"><label>Jenis Layanan</label>
+            <select class="form-select" id="l-tipe" onchange="toggleKandangField()">
+              <option value="Grooming">Grooming Mandi / Potong</option>
+              <option value="Pet Hotel">Penitipan (Pet Hotel)</option>
+              <option value="Grooming & Hotel">Grooming + Pet Hotel</option>
+            </select>
+          </div>
+          <div class="form-field" id="l-kandang-wrap" style="display:none;"><label>Slot Kandang</label><input class="form-input" id="l-kandang" placeholder="cth. Kandang A-02"></div>
+          <div class="form-field"><label>Biaya Layanan (Rp)</label><input class="form-input" type="number" id="l-biaya" placeholder="75000"></div>
+          <div class="form-field"><label>Tanggal Masuk / Jadwal</label><input class="form-input" type="date" id="l-tgl-masuk"></div>
+          <div class="form-field"><label>Tanggal Selesai / Ambil</label><input class="form-input" type="date" id="l-tgl-keluar"></div>
+        </div>
+        <button class="btn" onclick="addLayanan()">Simpan Data Service</button>
+        <button class="btn btn-ghost" onclick="toggleAddLayananForm()">Batal</button>
+      </div>
+
+      <div class="stat-grid" style="grid-template-columns: repeat(3, 1fr);" id="layananStatGrid"></div>
+
+      <div class="panel">
+        <div class="panel-title">Daftar Hewan & Status Layanan</div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr><th>Hewan & Pemilik</th><th>Layanan</th><th>Slot Kandang</th><th>Jadwal</th><th>Biaya</th><th>Status</th><th>Aksi</th></tr>
+            </thead>
+            <tbody id="layananTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. PERINGATAN -->
     <section class="view" id="view-peringatan">
       <div class="page-head">
         <div>
@@ -533,7 +659,7 @@
       </div>
     </section>
 
-    <!-- 5. PENGATURAN -->
+    <!-- 6. PENGATURAN -->
     <section class="view" id="view-pengaturan">
       <div class="page-head">
         <div>
@@ -702,10 +828,10 @@ const DEFAULT_PRODUCTS = [
 ];
 
 const DEFAULT_INVOICES = [
-  {id:'INV-0233', items:[{nama:'Royal Canin Adult 1kg', qty:1, harga:95000}], subtotal:95000, diskon:0, total:95000, pembeli:'Pelanggan Umum', metode:'Tunai', tanggal:d(0), waktu:'21:24'},
-  {id:'INV-0231', items:[{nama:'Whiskas Kitten Pouch', qty:4, harga:9500}], subtotal:38000, diskon:0, total:38000, pembeli:'Pelanggan Umum', metode:'QRIS', tanggal:d(0), waktu:'09:12'},
-  {id:'INV-0230', items:[{nama:'Royal Canin Adult 1kg', qty:1, harga:95000}], subtotal:95000, diskon:5000, total:90000, pembeli:'Budi', metode:'Tunai', tanggal:d(-1), waktu:'08:47'},
-  {id:'INV-0229', items:[{nama:'Kalung Anti Kutu', qty:2, harga:27000}], subtotal:54000, diskon:0, total:54000, pembeli:'Siti', metode:'Tunai', tanggal:d(-2), waktu:'08:20'}
+  {id:'INV-0233', items:[{nama:'Royal Canin Adult 1kg', qty:1, harga:95000, hargaBeli:65000}], subtotal:95000, diskon:0, total:95000, pembeli:'Pelanggan Umum', metode:'Tunai', tanggal:d(0), waktu:'21:24'},
+  {id:'INV-0231', items:[{nama:'Whiskas Kitten Pouch', qty:4, harga:9500, hargaBeli:6000}], subtotal:38000, diskon:0, total:38000, pembeli:'Pelanggan Umum', metode:'QRIS', tanggal:d(0), waktu:'09:12'},
+  {id:'INV-0230', items:[{nama:'Royal Canin Adult 1kg', qty:1, harga:95000, hargaBeli:65000}], subtotal:95000, diskon:5000, total:90000, pembeli:'Budi', metode:'Tunai', tanggal:d(-1), waktu:'08:47'},
+  {id:'INV-0229', items:[{nama:'Kalung Anti Kutu', qty:2, harga:27000, hargaBeli:15000}], subtotal:54000, diskon:0, total:54000, pembeli:'Siti', metode:'Tunai', tanggal:d(-2), waktu:'08:20'}
 ];
 
 const DEFAULT_REKON_LOGS = [
@@ -713,10 +839,16 @@ const DEFAULT_REKON_LOGS = [
   {id:2, produkNama:'Vitamin Bulu Kucing', petugas:'Dian', stokLama:2, stokBaru:7, selisih:5, alasan:'Bonus / Retur Supplier', tanggal:d(-3), waktu:'10:15'}
 ];
 
+const DEFAULT_LAYANAN = [
+  {id:1, petNama:'Milo', hewan:'kucing', pemilik:'Budi (0812-1111-2222)', tipe:'Grooming', kandang:'-', biaya:85000, tglMasuk:d(0), tglKeluar:d(0), status:'Dalam Proses'},
+  {id:2, petNama:'Blecky', hewan:'anjing', pemilik:'Siti (0856-3333-4444)', tipe:'Pet Hotel', kandang:'Kandang A-01', biaya:150000, tglMasuk:d(-1), tglKeluar:d(2), status:'Booking'}
+];
+
 let appConfig = JSON.parse(localStorage.getItem('paw_config')) || DEFAULT_CONFIG;
 let produkList = JSON.parse(localStorage.getItem('paw_produk')) || DEFAULT_PRODUCTS;
 let invoices = JSON.parse(localStorage.getItem('paw_invoices')) || DEFAULT_INVOICES;
 let rekonLogs = JSON.parse(localStorage.getItem('paw_rekon_logs')) || DEFAULT_REKON_LOGS;
+let layananList = JSON.parse(localStorage.getItem('paw_layanan')) || DEFAULT_LAYANAN;
 
 let cart = [];
 let invoiceCounter = invoices.length ? Math.max(...invoices.map(i => parseInt(i.id.replace('INV-',''))||233)) + 1 : 234;
@@ -735,6 +867,7 @@ if (typeof google !== 'undefined' && google.script) {
     renderInvoices();
     populateTxSelect();
     renderAlerts();
+    renderLayanan();
   }).getInitialData();
 }
 
@@ -743,6 +876,7 @@ function saveAllState() {
   localStorage.setItem('paw_produk', JSON.stringify(produkList));
   localStorage.setItem('paw_invoices', JSON.stringify(invoices));
   localStorage.setItem('paw_rekon_logs', JSON.stringify(rekonLogs));
+  localStorage.setItem('paw_layanan', JSON.stringify(layananList));
 }
 
 function fmtRp(n) { return 'Rp ' + Number(n).toLocaleString('id-ID'); }
@@ -751,8 +885,8 @@ function showToast(msg) { const t=document.getElementById('toast'); t.textConten
 
 const catLabel = {pakan:'Pakan', obat:'Obat/Vitamin', aksesoris:'Aksesoris'};
 const catClass = {pakan:'cat-pakan', obat:'cat-obat', aksesoris:'cat-aksesoris'};
-const hewanLabel = {anjing:'Anjing', kucing:'Kucing', unggas:'Unggas', semua:'Semua Hewan'};
-const hewanClass = {anjing:'sp-anjing', kucing:'sp-kucing', unggas:'sp-unggas', semua:'sp-semua'};
+const hewanLabel = {anjing:'Anjing', kucing:'Kucing', unggas:'Unggas', semua:'Semua Hewan', kelinci:'Kelinci/Lainnya'};
+const hewanClass = {anjing:'sp-anjing', kucing:'sp-kucing', unggas:'sp-unggas', semua:'sp-semua', kelinci:'sp-semua'};
 
 // AUTH / LOGIN SYSTEM
 function checkAuth() {
@@ -804,6 +938,7 @@ document.getElementById('navList').addEventListener('click', (e) => {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-' + item.dataset.view).classList.add('active');
   if(item.dataset.view === 'dashboard') renderDashboard();
+  if(item.dataset.view === 'layanan') renderLayanan();
 });
 
 // STORE CONFIG
@@ -892,6 +1027,7 @@ function resetAllData() {
     produkList = [...DEFAULT_PRODUCTS];
     invoices = [...DEFAULT_INVOICES];
     rekonLogs = [...DEFAULT_REKON_LOGS];
+    layananList = [...DEFAULT_LAYANAN];
     saveAllState();
     location.reload();
   }
@@ -932,17 +1068,39 @@ function filterInvoicesByRange(range) {
 function renderDashboard() {
   const range = document.getElementById('dashFilterRange').value;
   const filteredInvoices = filterInvoicesByRange(range);
-  const totalOmzet = filteredInvoices.reduce((acc, curr) => acc + curr.total, 0);
+  
+  // HITUNG OMBET, HPP, DISKON, DAN LABA BERSIH
+  let totalOmzet = 0;
+  let totalHpp = 0;
+  let totalDiskon = 0;
+
+  filteredInvoices.forEach(inv => {
+    totalOmzet += inv.total;
+    totalDiskon += (inv.diskon || 0);
+    inv.items.forEach(item => {
+      const hppItem = item.hargaBeli || 0;
+      totalHpp += hppItem * item.qty;
+    });
+  });
+
+  const labaBersih = totalOmzet - totalHpp;
 
   const lowStock = produkList.filter(o => o.stok <= appConfig.lowStockThreshold);
   const nearExpiry = produkList.filter(o => o.expired && daysUntil(o.expired) <= appConfig.expiryWarningDays);
 
   document.getElementById('statGrid').innerHTML = `
-    <div class="stat-card"><div class="stat-label">Omzet Penjualan</div><div class="stat-value good">${fmtRp(totalOmzet)}</div><div class="stat-sub">${filteredInvoices.length} transaksi</div></div>
+    <div class="stat-card"><div class="stat-label">Omzet Penjualan</div><div class="stat-value primary">${fmtRp(totalOmzet)}</div><div class="stat-sub">${filteredInvoices.length} transaksi</div></div>
+    <div class="stat-card"><div class="stat-label">Laba Bersih</div><div class="stat-value good">${fmtRp(labaBersih)}</div><div class="stat-sub">Keuntungan bersih</div></div>
     <div class="stat-card"><div class="stat-label">Jenis Produk</div><div class="stat-value">${produkList.length}</div><div class="stat-sub">total item terdaftar</div></div>
     <div class="stat-card"><div class="stat-label">Stok Menipis</div><div class="stat-value ${lowStock.length?'danger':''}">${lowStock.length}</div><div class="stat-sub">≤ ${appConfig.lowStockThreshold} unit</div></div>
     <div class="stat-card"><div class="stat-label">Akan Kadaluarsa</div><div class="stat-value ${nearExpiry.length?'warn':''}">${nearExpiry.length}</div><div class="stat-sub">≤ ${appConfig.expiryWarningDays} hari</div></div>
   `;
+
+  // UPDATE RINCIAN PANEL LABA RUGI
+  document.getElementById('lrOmzet').textContent = fmtRp(totalOmzet);
+  document.getElementById('lrHpp').textContent = fmtRp(totalHpp);
+  document.getElementById('lrDiskon').textContent = fmtRp(totalDiskon);
+  document.getElementById('lrLaba').textContent = fmtRp(labaBersih);
 
   const bestSellers = [...produkList].sort((a,b) => b.terjual - a.terjual).slice(0,5);
   document.getElementById('bestSellerList').innerHTML = bestSellers.map((o,i) => `
@@ -1052,11 +1210,12 @@ function renderStokTable() {
   
   document.getElementById('stokTableBody').innerHTML = rows.length ? rows.map(o => `
     <tr>
-      <td><div class="item-name">${o.nama}</div><div class="item-meta">${fmtRp(o.hargaBeli)} beli ${o.batch?'· Batch '+o.batch:''}</div></td>
+      <td><div class="item-name">${o.nama}</div><div class="item-meta">${o.batch?'Batch '+o.batch:'-'}</div></td>
       <td><span class="cat-tag ${catClass[o.kategori]}">${catLabel[o.kategori]}</span></td>
       <td><span class="species-tag ${hewanClass[o.hewan]}">${hewanLabel[o.hewan]}</span></td>
       <td>${o.expired ? daysUntil(o.expired)+' hari lagi' : '<span class="batch-code">Tanpa kadaluarsa</span>'}</td>
       <td><strong style="font-family:var(--mono); font-size:14px; color:${o.stok <= appConfig.lowStockThreshold ? 'var(--red)' : 'inherit'}">${o.stok}</strong></td>
+      <td>${fmtRp(o.hargaBeli)}</td>
       <td>${fmtRp(o.hargaJual)}</td>
       <td>
         <div style="display:flex; gap:6px;">
@@ -1065,7 +1224,7 @@ function renderStokTable() {
         </div>
       </td>
     </tr>
-  `).join('') : `<tr><td colspan="7" class="empty">Tidak ada produk yang cocok.</td></tr>`;
+  `).join('') : `<tr><td colspan="8" class="empty">Tidak ada produk yang cocok.</td></tr>`;
 
   renderRekonLogs();
 }
@@ -1247,6 +1406,7 @@ function tambahKeKeranjang() {
       id: o.id,
       nama: o.nama,
       harga: o.hargaJual,
+      hargaBeli: o.hargaBeli || 0,
       qty: qty
     });
   }
@@ -1321,7 +1481,8 @@ function prosesTransaksi() {
       itemsInvoice.push({
         nama: item.nama,
         qty: item.qty,
-        harga: item.harga
+        harga: item.harga,
+        hargaBeli: o.hargaBeli || 0
       });
     }
   }
@@ -1364,12 +1525,34 @@ function prosesTransaksi() {
   showReceiptModal(newInv);
 }
 
+// FILTER & RENDER RIWAYAT TRANSAKSI
+function resetInvFilters() {
+  document.getElementById('invFilterStart').value = '';
+  document.getElementById('invFilterEnd').value = '';
+  document.getElementById('invFilterMetode').value = '';
+  renderInvoices();
+}
+
 function renderInvoices() {
+  const start = document.getElementById('invFilterStart')?.value;
+  const end = document.getElementById('invFilterEnd')?.value;
+  const met = document.getElementById('invFilterMetode')?.value;
+
+  const filtered = invoices.filter(inv => {
+    if(start && inv.tanggal < start) return false;
+    if(end && inv.tanggal > end) return false;
+    if(met && (inv.metode || 'Tunai') !== met) return false;
+    return true;
+  });
+
   const totalOmzetHariIni = invoices.filter(i => i.tanggal === d(0)).reduce((acc, c) => acc + c.total, 0);
   document.getElementById('omzetLabel').textContent = `· total ${fmtRp(totalOmzetHariIni)} hari ini`;
 
-  document.getElementById('invoiceListBody').innerHTML = invoices.map(inv => {
+  document.getElementById('invoiceListBody').innerHTML = filtered.length ? filtered.map(inv => {
     const invJson = JSON.stringify(inv).replace(/'/g, "&apos;");
+    const m = inv.metode || 'Tunai';
+    const badgeClass = m === 'QRIS' ? 'pay-qris' : 'pay-tunai';
+
     return `
     <tr>
       <td>
@@ -1380,10 +1563,11 @@ function renderInvoices() {
       <td>${inv.tanggal} ${inv.waktu}</td>
       <td>${inv.pembeli}</td>
       <td>${inv.items.map(i => `${i.nama} (x${i.qty})`).join(', ')}</td>
+      <td><span class="pay-badge ${badgeClass}">${m}</span></td>
       <td class="invoice-total">${fmtRp(inv.total)}</td>
       <td><button class="btn btn-sm btn-ghost" onclick='showReceiptModal(${invJson})'>Cetak Struk</button></td>
     </tr>`;
-  }).join('');
+  }).join('') : `<tr><td colspan="7" class="empty">Tidak ada riwayat transaksi yang cocok dengan filter.</td></tr>`;
 }
 
 function showReceiptModal(inv) {
@@ -1415,6 +1599,106 @@ function closeReceiptModal() {
   document.getElementById('receiptModal').classList.remove('active');
 }
 
+// LAYANAN GROOMING & PET HOTEL
+function toggleAddLayananForm() {
+  const p = document.getElementById('addLayananPanel');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+  toggleKandangField();
+}
+
+function toggleKandangField() {
+  const tipe = document.getElementById('l-tipe').value;
+  const isHotel = tipe === 'Pet Hotel' || tipe === 'Grooming & Hotel';
+  document.getElementById('l-kandang-wrap').style.display = isHotel ? 'block' : 'none';
+}
+
+function addLayanan() {
+  const petNama = document.getElementById('l-pet').value.trim();
+  if(!petNama) { showToast('Isi nama hewan'); return; }
+
+  const tipe = document.getElementById('l-tipe').value;
+  const baru = {
+    id: Date.now(),
+    petNama,
+    hewan: document.getElementById('l-hewan').value,
+    pemilik: document.getElementById('l-pemilik').value.trim() || 'Pemilik Umum',
+    tipe,
+    kandang: (tipe === 'Grooming') ? '-' : (document.getElementById('l-kandang').value.trim() || 'Kandang-01'),
+    biaya: parseInt(document.getElementById('l-biaya').value) || 0,
+    tglMasuk: document.getElementById('l-tgl-masuk').value || d(0),
+    tglKeluar: document.getElementById('l-tgl-keluar').value || d(0),
+    status: 'Booking'
+  };
+
+  layananList.unshift(baru);
+  saveAllState();
+
+  ['l-pet','l-pemilik','l-kandang','l-biaya','l-tgl-masuk','l-tgl-keluar'].forEach(id => document.getElementById(id).value = '');
+  toggleAddLayananForm();
+  renderLayanan();
+  showToast('Booking service berhasil ditambahkan!');
+}
+
+function updateStatusLayanan(id, statusBaru) {
+  const item = layananList.find(x => x.id === id);
+  if(item) {
+    item.status = statusBaru;
+    saveAllState();
+    renderLayanan();
+    showToast(`Status ${item.petNama} diubah ke ${statusBaru}`);
+  }
+}
+
+function hapusLayanan(id) {
+  if(confirm("Hapus data service ini?")) {
+    layananList = layananList.filter(x => x.id !== id);
+    saveAllState();
+    renderLayanan();
+    showToast('Data service dihapus');
+  }
+}
+
+function renderLayanan() {
+  const totalHotel = layananList.filter(x => (x.tipe === 'Pet Hotel' || x.tipe === 'Grooming & Hotel') && x.status !== 'Selesai' && x.status !== 'Batal').length;
+  const totalGroomingHariIni = layananList.filter(x => x.tglMasuk === d(0) && x.tipe.includes('Grooming')).length;
+  const totalAktif = layananList.filter(x => x.status === 'Dalam Proses' || x.status === 'Booking').length;
+
+  document.getElementById('layananStatGrid').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Sedang Dirawat / Titip</div><div class="stat-value primary">${totalAktif} hewan</div><div class="stat-sub">aktif dalam pengerjaan</div></div>
+    <div class="stat-card"><div class="stat-label">Slot Kandang Terpakai</div><div class="stat-value warn">${totalHotel} kandang</div><div class="stat-sub">penitipan hotel</div></div>
+    <div class="stat-card"><div class="stat-label">Grooming Hari Ini</div><div class="stat-value good">${totalGroomingHariIni} hewan</div><div class="stat-sub">jadwal hari ini</div></div>
+  `;
+
+  const tbody = document.getElementById('layananTableBody');
+  tbody.innerHTML = layananList.length ? layananList.map(item => {
+    let stClass = 'st-booking';
+    if(item.status === 'Dalam Proses') stClass = 'st-proses';
+    if(item.status === 'Selesai') stClass = 'st-selesai';
+    if(item.status === 'Batal') stClass = 'st-batal';
+
+    return `
+    <tr>
+      <td>
+        <div style="font-weight:600; font-size:14px;">${item.petNama} <span class="species-tag ${hewanClass[item.hewan]}">${hewanLabel[item.hewan]}</span></div>
+        <div style="font-size:11px; color:var(--ink-soft);">${item.pemilik}</div>
+      </td>
+      <td><strong>${item.tipe}</strong></td>
+      <td><span class="batch-code">${item.kandang}</span></td>
+      <td style="font-size:12px;">${item.tglMasuk} s/d ${item.tglKeluar}</td>
+      <td style="font-family:var(--mono); font-weight:600;">${fmtRp(item.biaya)}</td>
+      <td><span class="status-badge ${stClass}">${item.status}</span></td>
+      <td>
+        <div style="display:flex; gap:4px; flex-wrap:wrap;">
+          ${item.status === 'Booking' ? `<button class="btn btn-sm btn-ghost" onclick="updateStatusLayanan(${item.id}, 'Dalam Proses')">Proses</button>` : ''}
+          ${item.status === 'Dalam Proses' ? `<button class="btn btn-sm" style="background:var(--green);" onclick="updateStatusLayanan(${item.id}, 'Selesai')">Selesai</button>` : ''}
+          <button class="btn btn-sm btn-ghost" style="color:var(--red);" onclick="hapusLayanan(${item.id})">Hapus</button>
+        </div>
+      </td>
+    </tr>
+    `;
+  }).join('') : `<tr><td colspan="7" class="empty">Belum ada daftar booking service.</td></tr>`;
+}
+
 // PERINGATAN
 function renderAlerts() {
   const low = [...produkList].filter(o => o.stok <= appConfig.lowStockThreshold).sort((a,b) => a.stok - b.stok);
@@ -1444,6 +1728,7 @@ renderStokTable();
 renderInvoices();
 populateTxSelect();
 renderAlerts();
+renderLayanan();
 </script>
 
 </body>
