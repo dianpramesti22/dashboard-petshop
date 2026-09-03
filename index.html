@@ -441,12 +441,62 @@
 
       <div class="panel">
         <div class="panel-title">Transaksi Baru</div>
-        <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr;">
-          <div class="form-field"><label>Pilih Produk</label><select class="form-select" id="tx-produk"></select></div>
-          <div class="form-field"><label>Jumlah (Qty)</label><input class="form-input" type="number" id="tx-qty" value="1" min="1"></div>
-          <div class="form-field"><label>Nama Pembeli (Opsional)</label><input class="form-input" id="tx-nama" placeholder="Pelanggan Umum"></div>
+        
+        <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 12px;">
+          <div class="form-field">
+            <label>Nama Pembeli (Opsional)</label>
+            <input class="form-input" id="tx-nama" placeholder="Pelanggan Umum">
+          </div>
+          <div class="form-field">
+            <label>Metode Pembayaran</label>
+            <select class="form-select" id="tx-metode">
+              <option value="Tunai">Tunai</option>
+              <option value="QRIS">QRIS</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Diskon (Rp)</label>
+            <input class="form-input" type="number" id="tx-diskon" value="0" min="0" placeholder="0" oninput="renderCart()">
+          </div>
         </div>
-        <button class="btn" onclick="prosesTransaksi()">Proses & Cetak Struk</button>
+
+        <div class="form-grid" style="grid-template-columns: 2fr 1fr auto; align-items: end; gap: 10px;">
+          <div class="form-field">
+            <label>Pilih Produk</label>
+            <select class="form-select" id="tx-produk"></select>
+          </div>
+          <div class="form-field">
+            <label>Jumlah (Qty)</label>
+            <input class="form-input" type="number" id="tx-qty" value="1" min="1">
+          </div>
+          <button class="btn btn-ghost" onclick="tambahKeKeranjang()" style="height: 38px;">+ Keranjang</button>
+        </div>
+
+        <!-- TABEL KERANJANG BELANJA -->
+        <div style="margin-top: 16px; overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Produk</th>
+                <th>Harga</th>
+                <th>Qty</th>
+                <th>Subtotal</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="cartTableBody">
+              <tr><td colspan="5" class="empty">Keranjang belanja masih kosong.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- RINGKASAN & TOTAL -->
+        <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; align-items: flex-end;">
+          <div style="font-size: 13px; color: var(--ink-soft);">Subtotal: <span id="cartSubtotal" style="font-family: var(--mono); font-weight: 600;">Rp 0</span></div>
+          <div style="font-size: 13px; color: var(--red);">Diskon: <span id="cartDiskon" style="font-family: var(--mono); font-weight: 600;">- Rp 0</span></div>
+          <div style="font-size: 18px; font-weight: 700; margin-top: 4px;">Total Bayar: <span id="cartGrandTotal" style="font-family: var(--mono); color: var(--primary-dark);">Rp 0</span></div>
+          <button class="btn" onclick="prosesTransaksi()" style="margin-top: 10px;">Proses & Cetak Struk</button>
+        </div>
       </div>
 
       <div class="panel">
@@ -600,9 +650,12 @@
     </div>
     <div class="receipt-row"><span>No: <strong id="rcInvId">INV-0000</strong></span><span id="rcTime">00:00</span></div>
     <div class="receipt-row"><span>Pelanggan:</span><span id="rcCustomer">Umum</span></div>
+    <div class="receipt-row"><span>Metode:</span><strong id="rcPaymentMethod">Tunai</strong></div>
     <div class="receipt-divider"></div>
     <div id="rcItemsList"></div>
     <div class="receipt-divider"></div>
+    <div class="receipt-row"><span>Subtotal</span><span id="rcSubtotal">Rp 0</span></div>
+    <div class="receipt-row" id="rcDiskonRow" style="color:var(--red);"><span>Diskon</span><span id="rcDiskon">- Rp 0</span></div>
     <div class="receipt-row" style="font-size:13px; font-weight:700;"><span>TOTAL</span><span id="rcTotal">Rp 0</span></div>
     <div class="receipt-divider"></div>
     <div class="receipt-footer">
@@ -649,10 +702,10 @@ const DEFAULT_PRODUCTS = [
 ];
 
 const DEFAULT_INVOICES = [
-  {id:'INV-0233', items:[{nama:'Royal Canin Adult 1kg', qty:1, harga:95000}], total:95000, pembeli:'Pelanggan Umum', tanggal:d(0), waktu:'21:24'},
-  {id:'INV-0231', items:[{nama:'Whiskas Kitten Pouch', qty:4, harga:9500}], total:38000, pembeli:'Pelanggan Umum', tanggal:d(0), waktu:'09:12'},
-  {id:'INV-0230', items:[{nama:'Royal Canin Adult 1kg', qty:1, harga:95000}], total:95000, pembeli:'Budi', tanggal:d(-1), waktu:'08:47'},
-  {id:'INV-0229', items:[{nama:'Kalung Anti Kutu', qty:2, harga:27000}], total:54000, pembeli:'Siti', tanggal:d(-2), waktu:'08:20'}
+  {id:'INV-0233', items:[{nama:'Royal Canin Adult 1kg', qty:1, harga:95000}], subtotal:95000, diskon:0, total:95000, pembeli:'Pelanggan Umum', metode:'Tunai', tanggal:d(0), waktu:'21:24'},
+  {id:'INV-0231', items:[{nama:'Whiskas Kitten Pouch', qty:4, harga:9500}], subtotal:38000, diskon:0, total:38000, pembeli:'Pelanggan Umum', metode:'QRIS', tanggal:d(0), waktu:'09:12'},
+  {id:'INV-0230', items:[{nama:'Royal Canin Adult 1kg', qty:1, harga:95000}], subtotal:95000, diskon:5000, total:90000, pembeli:'Budi', metode:'Tunai', tanggal:d(-1), waktu:'08:47'},
+  {id:'INV-0229', items:[{nama:'Kalung Anti Kutu', qty:2, harga:27000}], subtotal:54000, diskon:0, total:54000, pembeli:'Siti', metode:'Tunai', tanggal:d(-2), waktu:'08:20'}
 ];
 
 const DEFAULT_REKON_LOGS = [
@@ -665,9 +718,25 @@ let produkList = JSON.parse(localStorage.getItem('paw_produk')) || DEFAULT_PRODU
 let invoices = JSON.parse(localStorage.getItem('paw_invoices')) || DEFAULT_INVOICES;
 let rekonLogs = JSON.parse(localStorage.getItem('paw_rekon_logs')) || DEFAULT_REKON_LOGS;
 
+let cart = [];
 let invoiceCounter = invoices.length ? Math.max(...invoices.map(i => parseInt(i.id.replace('INV-',''))||233)) + 1 : 234;
 let activeEditProdukId = null;
 let loggedInUser = sessionStorage.getItem('paw_logged_user') || null;
+
+// SINKRONISASI DATA GOOGLE SHEETS (Jika dijalankan di Google Apps Script)
+if (typeof google !== 'undefined' && google.script) {
+  google.script.run.withSuccessHandler(function(data) {
+    if (data.produkList && data.produkList.length) produkList = data.produkList;
+    if (data.invoices && data.invoices.length) invoices = data.invoices;
+    if (data.rekonLogs && data.rekonLogs.length) rekonLogs = data.rekonLogs;
+    
+    renderDashboard();
+    renderStokTable();
+    renderInvoices();
+    populateTxSelect();
+    renderAlerts();
+  }).getInitialData();
+}
 
 function saveAllState() {
   localStorage.setItem('paw_config', JSON.stringify(appConfig));
@@ -727,6 +796,7 @@ function handleLogout() {
   }
 }
 
+// NAVIGATION
 document.getElementById('navList').addEventListener('click', (e) => {
   const item = e.target.closest('.nav-item'); if(!item) return;
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -736,6 +806,7 @@ document.getElementById('navList').addEventListener('click', (e) => {
   if(item.dataset.view === 'dashboard') renderDashboard();
 });
 
+// STORE CONFIG
 function applyStoreConfig() {
   document.getElementById('sidebarStoreName').textContent = appConfig.storeName;
   document.getElementById('loginStoreName').textContent = appConfig.storeName;
@@ -826,6 +897,7 @@ function resetAllData() {
   }
 }
 
+// DASHBOARD & CUSTOM DATE FILTER
 function handleDashRangeChange() {
   const val = document.getElementById('dashFilterRange').value;
   const customWrap = document.getElementById('customDateWrap');
@@ -942,6 +1014,7 @@ function drawSalesChart(invList) {
   });
 }
 
+// EXPORT EXCEL
 function exportStokExcel() {
   let csv = "\uFEFFID,Nama Produk,Kategori,Target Hewan,Harga Beli,Harga Jual,Stok,Nomor Batch,Tanggal Expired,Total Terjual\n";
   produkList.forEach(p => {
@@ -951,10 +1024,10 @@ function exportStokExcel() {
 }
 
 function exportTransaksiExcel() {
-  let csv = "\uFEFFID Invoice,Tanggal,Waktu,Pembeli,Detail Items,Total Omzet\n";
+  let csv = "\uFEFFID Invoice,Tanggal,Waktu,Pembeli,Metode,Detail Items,Subtotal,Diskon,Total Omzet\n";
   invoices.forEach(inv => {
     const detail = inv.items.map(i => `${i.nama} (x${i.qty})`).join('; ');
-    csv += `"${inv.id}","${inv.tanggal}","${inv.waktu}","${inv.pembeli}","${detail}",${inv.total}\n`;
+    csv += `"${inv.id}","${inv.tanggal}","${inv.waktu}","${inv.pembeli}","${inv.metode||'Tunai'}","${detail}",${inv.subtotal||inv.total},${inv.diskon||0},${inv.total}\n`;
   });
   downloadCSV(csv, `Riwayat_Transaksi_${appConfig.storeName}.csv`);
 }
@@ -970,6 +1043,7 @@ function downloadCSV(csvContent, fileName) {
   showToast('File Excel/CSV berhasil di-download');
 }
 
+// STOK TABLE & REKON STOK WITH LOGGING
 function renderStokTable() {
   const q = document.getElementById('searchStok').value.toLowerCase();
   const kat = document.getElementById('filterKategori').value;
@@ -1057,7 +1131,7 @@ function saveEditStok() {
   const now = new Date();
   const timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
 
-  rekonLogs.unshift({
+  const newLog = {
     id: Date.now(),
     produkNama: p.nama,
     petugas,
@@ -1067,9 +1141,16 @@ function saveEditStok() {
     alasan,
     tanggal: d(0),
     waktu: timeStr
-  });
+  };
+
+  rekonLogs.unshift(newLog);
 
   saveAllState();
+
+  if (typeof google !== 'undefined' && google.script) {
+    google.script.run.saveRekonLogServer(newLog, p);
+  }
+
   renderStokTable();
   renderDashboard();
   populateTxSelect();
@@ -1096,7 +1177,7 @@ function addProduk() {
   const kategori = document.getElementById('f-kategori').value;
   const isAksesoris = kategori === 'aksesoris';
   
-  produkList.push({
+  const baru = {
     id: Date.now(),
     nama,
     kategori,
@@ -1107,9 +1188,16 @@ function addProduk() {
     batch: isAksesoris ? null : (document.getElementById('f-batch').value || 'BATCH-' + Date.now().toString().slice(-4)),
     expired: isAksesoris ? null : document.getElementById('f-expired').value,
     terjual: 0
-  });
+  };
+
+  produkList.push(baru);
 
   saveAllState();
+
+  if (typeof google !== 'undefined' && google.script) {
+    google.script.run.saveProdukServer(baru);
+  }
+
   ['f-nama','f-hbeli','f-hjual','f-stok','f-batch','f-expired'].forEach(id => document.getElementById(id).value='');
   toggleAddForm(); renderStokTable(); renderDashboard(); populateTxSelect(); renderAlerts();
   showToast('Produk baru ditambahkan');
@@ -1118,48 +1206,161 @@ function addProduk() {
 function hapusProduk(id) {
   if(confirm("Hapus produk ini dari stok?")) {
     produkList = produkList.filter(p => p.id !== id);
-    saveAllState(); renderStokTable(); renderDashboard(); populateTxSelect();
+    saveAllState();
+
+    if (typeof google !== 'undefined' && google.script) {
+      google.script.run.deleteProdukServer(id);
+    }
+
+    renderStokTable(); renderDashboard(); populateTxSelect();
     showToast('Produk dihapus');
   }
 }
 
+// TRANSAKSI & KERANJANG BELANJA
 function populateTxSelect() {
   document.getElementById('tx-produk').innerHTML = produkList.map(o => `<option value="${o.id}">${o.nama} — (Stok: ${o.stok}) — ${fmtRp(o.hargaJual)}</option>`).join('');
 }
 
-function prosesTransaksi() {
+function tambahKeKeranjang() {
   const id = parseInt(document.getElementById('tx-produk').value);
   const qty = parseInt(document.getElementById('tx-qty').value) || 0;
-  const pembeli = document.getElementById('tx-nama').value.trim() || 'Pelanggan Umum';
   const o = produkList.find(x => x.id === id);
 
-  if(!o || qty <= 0) { showToast('Pilih produk dan jumlah yang valid'); return; }
-  if(qty > o.stok) { showToast(`Stok ${o.nama} tidak cukup (sisa ${o.stok})`); return; }
+  if(!o || qty <= 0) { 
+    showToast('Pilih produk dan jumlah yang valid'); 
+    return; 
+  }
 
-  o.stok -= qty;
-  o.terjual += qty;
-  const total = o.hargaJual * qty;
+  const existingItem = cart.find(item => item.id === id);
+  const currentCartQty = existingItem ? existingItem.qty : 0;
+
+  if(currentCartQty + qty > o.stok) {
+    showToast(`Stok ${o.nama} tidak cukup (tersisa ${o.stok}, di keranjang ${currentCartQty})`);
+    return;
+  }
+
+  if(existingItem) {
+    existingItem.qty += qty;
+  } else {
+    cart.push({
+      id: o.id,
+      nama: o.nama,
+      harga: o.hargaJual,
+      qty: qty
+    });
+  }
+
+  document.getElementById('tx-qty').value = 1;
+  renderCart();
+  showToast(`${o.nama} ditambahkan ke keranjang`);
+}
+
+function hapusDariKeranjang(id) {
+  cart = cart.filter(item => item.id !== id);
+  renderCart();
+}
+
+function renderCart() {
+  const tbody = document.getElementById('cartTableBody');
+  const diskonInput = parseInt(document.getElementById('tx-diskon').value) || 0;
+
+  if(cart.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty">Keranjang belanja masih kosong.</td></tr>`;
+    document.getElementById('cartSubtotal').textContent = 'Rp 0';
+    document.getElementById('cartDiskon').textContent = '- Rp 0';
+    document.getElementById('cartGrandTotal').textContent = 'Rp 0';
+    return;
+  }
+
+  let subtotal = 0;
+  tbody.innerHTML = cart.map(item => {
+    const itemSubtotal = item.harga * item.qty;
+    subtotal += itemSubtotal;
+    return `
+      <tr>
+        <td><strong>${item.nama}</strong></td>
+        <td>${fmtRp(item.harga)}</td>
+        <td>${item.qty}</td>
+        <td style="font-family:var(--mono); font-weight:600;">${fmtRp(itemSubtotal)}</td>
+        <td><button class="btn btn-sm btn-ghost" style="color:var(--red);" onclick="hapusDariKeranjang(${item.id})">Hapus</button></td>
+      </tr>
+    `;
+  }).join('');
+
+  const grandTotal = Math.max(0, subtotal - diskonInput);
+
+  document.getElementById('cartSubtotal').textContent = fmtRp(subtotal);
+  document.getElementById('cartDiskon').textContent = '- ' + fmtRp(diskonInput);
+  document.getElementById('cartGrandTotal').textContent = fmtRp(grandTotal);
+}
+
+function prosesTransaksi() {
+  if(cart.length === 0) {
+    showToast('Keranjang belanja masih kosong!');
+    return;
+  }
+
+  const pembeli = document.getElementById('tx-nama').value.trim() || 'Pelanggan Umum';
+  const metode = document.getElementById('tx-metode').value;
+  const diskon = parseInt(document.getElementById('tx-diskon').value) || 0;
+
+  let subtotal = 0;
+  const itemsInvoice = [];
+
+  for(const item of cart) {
+    const o = produkList.find(x => x.id === item.id);
+    if(o) {
+      if(item.qty > o.stok) {
+        showToast(`Stok ${o.nama} tidak mencukupi!`);
+        return;
+      }
+      o.stok -= item.qty;
+      o.terjual += item.qty;
+      subtotal += item.harga * item.qty;
+      itemsInvoice.push({
+        nama: item.nama,
+        qty: item.qty,
+        harga: item.harga
+      });
+    }
+  }
+
+  const grandTotal = Math.max(0, subtotal - diskon);
+
   invoiceCounter++;
-
   const now = new Date();
   const timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
 
   const newInv = {
     id: 'INV-' + String(invoiceCounter).padStart(4, '0'),
-    items: [{ nama: o.nama, qty, harga: o.hargaJual }],
-    total,
+    items: itemsInvoice,
+    subtotal,
+    diskon,
+    total: grandTotal,
     pembeli,
+    metode,
     tanggal: d(0),
     waktu: timeStr
   };
 
   invoices.unshift(newInv);
+  cart = [];
+
   saveAllState();
 
-  document.getElementById('tx-qty').value = 1;
-  document.getElementById('tx-nama').value = '';
+  if (typeof google !== 'undefined' && google.script) {
+    google.script.run.saveTransaksiServer(newInv, produkList);
+  }
 
-  renderInvoices(); renderStokTable(); renderDashboard(); populateTxSelect(); renderAlerts();
+  document.getElementById('tx-nama').value = '';
+  document.getElementById('tx-diskon').value = '0';
+  renderCart();
+  renderInvoices();
+  renderStokTable();
+  renderDashboard();
+  populateTxSelect();
+  renderAlerts();
   showReceiptModal(newInv);
 }
 
@@ -1192,13 +1393,21 @@ function showReceiptModal(inv) {
   document.getElementById('rcInvId').textContent = inv.id;
   document.getElementById('rcTime').textContent = inv.tanggal + ' ' + inv.waktu;
   document.getElementById('rcCustomer').textContent = inv.pembeli;
+  document.getElementById('rcPaymentMethod').textContent = inv.metode || 'Tunai';
 
   document.getElementById('rcItemsList').innerHTML = inv.items.map(i => `
     <div class="receipt-row"><span>${i.nama}</span></div>
     <div class="receipt-row"><span style="padding-left:8px;">${i.qty} x ${fmtRp(i.harga)}</span><span>${fmtRp(i.qty * i.harga)}</span></div>
   `).join('');
 
+  const sub = inv.subtotal || inv.total;
+  const disk = inv.diskon || 0;
+
+  document.getElementById('rcSubtotal').textContent = fmtRp(sub);
+  document.getElementById('rcDiskon').textContent = '- ' + fmtRp(disk);
+  document.getElementById('rcDiskonRow').style.display = disk > 0 ? 'flex' : 'none';
   document.getElementById('rcTotal').textContent = fmtRp(inv.total);
+
   document.getElementById('receiptModal').classList.add('active');
 }
 
@@ -1206,6 +1415,7 @@ function closeReceiptModal() {
   document.getElementById('receiptModal').classList.remove('active');
 }
 
+// PERINGATAN
 function renderAlerts() {
   const low = [...produkList].filter(o => o.stok <= appConfig.lowStockThreshold).sort((a,b) => a.stok - b.stok);
   document.getElementById('lowStockAlerts').innerHTML = low.length ? low.map(o => `
@@ -1226,6 +1436,7 @@ function renderAlerts() {
   }).join('') : `<div class="empty">Tidak ada produk yang mendekati kadaluarsa.</div>`;
 }
 
+// INIT APP
 checkAuth();
 applyStoreConfig();
 renderDashboard();
