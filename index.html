@@ -141,6 +141,8 @@
   .btn-edit:hover{background:var(--blue);color:#fff;}
   .btn-danger{background:var(--red);color:#fff;}
   .btn-danger:hover{background:#932822;}
+  .btn-wa{background:#25D366;color:#fff;}
+  .btn-wa:hover{background:#1EBE57;}
   .btn-sm{padding:5px 10px;font-size:12px;border-radius:7px;}
 
   .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
@@ -487,8 +489,8 @@
         
         <div class="form-grid" style="grid-template-columns: 2fr 1fr 1fr; margin-bottom: 12px;">
           <div class="form-field">
-            <label>Nama Pembeli (Opsional)</label>
-            <input class="form-input" id="tx-nama" placeholder="Pelanggan Umum">
+            <label>Nama Pembeli / No. WA (Opsional)</label>
+            <input class="form-input" id="tx-nama" placeholder="cth. Budi (081234567890)">
           </div>
           <div class="form-field">
             <label>Metode Pembayaran</label>
@@ -630,7 +632,7 @@
         <div style="overflow-x:auto;">
           <table>
             <thead>
-              <tr><th>Hewan & Pemilik</th><th>Layanan</th><th>Slot Kandang</th><th>Jadwal</th><th>Biaya</th><th>Status</th><th>Aksi</th></tr>
+              <tr><th>Hewan & Pemilik</th><th>Layanan</th><th>Slot Kandang</th><th>Jadwal</th><th>Biaya</th><th>Status</th><th>Aksi / Struk</th></tr>
             </thead>
             <tbody id="layananTableBody"></tbody>
           </table>
@@ -786,11 +788,12 @@
     <div class="receipt-divider"></div>
     <div class="receipt-footer">
       *** TERIMA KASIH ***<br>
-      Barang yang sudah dibeli tidak dapat ditukar/dikembalikan.
+      Barang / Layanan yang sudah dibeli tidak dapat ditukar/dikembalikan.
     </div>
   </div>
-  <div class="modal-btns" style="position:fixed; bottom:20px; display:flex; gap:10px; z-index:110;">
-    <button class="btn" onclick="window.print()">Cetak (Printer Thermal)</button>
+  <div class="modal-btns" style="position:fixed; bottom:20px; display:flex; gap:8px; z-index:110;">
+    <button class="btn btn-wa" onclick="kirimStrukWA()">Kirim WA</button>
+    <button class="btn" onclick="window.print()">Cetak Thermal</button>
     <button class="btn btn-ghost" style="background:#fff;" onclick="closeReceiptModal()">Tutup</button>
   </div>
 </div>
@@ -830,7 +833,7 @@ const DEFAULT_PRODUCTS = [
 const DEFAULT_INVOICES = [
   {id:'INV-0233', items:[{nama:'Royal Canin Adult 1kg', qty:1, harga:95000, hargaBeli:65000}], subtotal:95000, diskon:0, total:95000, pembeli:'Pelanggan Umum', metode:'Tunai', tanggal:d(0), waktu:'21:24'},
   {id:'INV-0231', items:[{nama:'Whiskas Kitten Pouch', qty:4, harga:9500, hargaBeli:6000}], subtotal:38000, diskon:0, total:38000, pembeli:'Pelanggan Umum', metode:'QRIS', tanggal:d(0), waktu:'09:12'},
-  {id:'INV-0230', items:[{nama:'Royal Canin Adult 1kg', qty:1, harga:95000, hargaBeli:65000}], subtotal:95000, diskon:5000, total:90000, pembeli:'Budi', metode:'Tunai', tanggal:d(-1), waktu:'08:47'},
+  {id:'INV-0230', items:[{nama:'Royal Canin Adult 1kg', qty:1, harga:95000, hargaBeli:65000}], subtotal:95000, diskon:5000, total:90000, pembeli:'Budi (081234567890)', metode:'Tunai', tanggal:d(-1), waktu:'08:47'},
   {id:'INV-0229', items:[{nama:'Kalung Anti Kutu', qty:2, harga:27000, hargaBeli:15000}], subtotal:54000, diskon:0, total:54000, pembeli:'Siti', metode:'Tunai', tanggal:d(-2), waktu:'08:20'}
 ];
 
@@ -840,8 +843,8 @@ const DEFAULT_REKON_LOGS = [
 ];
 
 const DEFAULT_LAYANAN = [
-  {id:1, petNama:'Milo', hewan:'kucing', pemilik:'Budi (0812-1111-2222)', tipe:'Grooming', kandang:'-', biaya:85000, tglMasuk:d(0), tglKeluar:d(0), status:'Dalam Proses'},
-  {id:2, petNama:'Blecky', hewan:'anjing', pemilik:'Siti (0856-3333-4444)', tipe:'Pet Hotel', kandang:'Kandang A-01', biaya:150000, tglMasuk:d(-1), tglKeluar:d(2), status:'Booking'}
+  {id:1, petNama:'Milo', hewan:'kucing', pemilik:'Budi (081234567890)', tipe:'Grooming', kandang:'-', biaya:85000, tglMasuk:d(0), tglKeluar:d(0), status:'Dalam Proses'},
+  {id:2, petNama:'Blecky', hewan:'anjing', pemilik:'Siti (085699998888)', tipe:'Pet Hotel', kandang:'Kandang A-01', biaya:150000, tglMasuk:d(-1), tglKeluar:d(2), status:'Booking'}
 ];
 
 let appConfig = JSON.parse(localStorage.getItem('paw_config')) || DEFAULT_CONFIG;
@@ -853,6 +856,7 @@ let layananList = JSON.parse(localStorage.getItem('paw_layanan')) || DEFAULT_LAY
 let cart = [];
 let invoiceCounter = invoices.length ? Math.max(...invoices.map(i => parseInt(i.id.replace('INV-',''))||233)) + 1 : 234;
 let activeEditProdukId = null;
+let activeReceiptData = null; // Menyimpan data struk yang sedang aktif dibuka
 let loggedInUser = sessionStorage.getItem('paw_logged_user') || null;
 
 // SINKRONISASI DATA GOOGLE SHEETS (Jika dijalankan di Google Apps Script)
@@ -1069,7 +1073,6 @@ function renderDashboard() {
   const range = document.getElementById('dashFilterRange').value;
   const filteredInvoices = filterInvoicesByRange(range);
   
-  // HITUNG OMBET, HPP, DISKON, DAN LABA BERSIH
   let totalOmzet = 0;
   let totalHpp = 0;
   let totalDiskon = 0;
@@ -1096,7 +1099,6 @@ function renderDashboard() {
     <div class="stat-card"><div class="stat-label">Akan Kadaluarsa</div><div class="stat-value ${nearExpiry.length?'warn':''}">${nearExpiry.length}</div><div class="stat-sub">≤ ${appConfig.expiryWarningDays} hari</div></div>
   `;
 
-  // UPDATE RINCIAN PANEL LABA RUGI
   document.getElementById('lrOmzet').textContent = fmtRp(totalOmzet);
   document.getElementById('lrHpp').textContent = fmtRp(totalHpp);
   document.getElementById('lrDiskon').textContent = fmtRp(totalDiskon);
@@ -1495,6 +1497,7 @@ function prosesTransaksi() {
 
   const newInv = {
     id: 'INV-' + String(invoiceCounter).padStart(4, '0'),
+    type: 'transaksi',
     items: itemsInvoice,
     subtotal,
     diskon,
@@ -1570,7 +1573,9 @@ function renderInvoices() {
   }).join('') : `<tr><td colspan="7" class="empty">Tidak ada riwayat transaksi yang cocok dengan filter.</td></tr>`;
 }
 
+// SHOW STRUK PENJUALAN KASIR
 function showReceiptModal(inv) {
+  activeReceiptData = {...inv, type: 'transaksi'};
   document.getElementById('rcStoreName').textContent = appConfig.storeName;
   document.getElementById('rcStoreAddress').textContent = appConfig.storeAddress || '';
   document.getElementById('rcStorePhone').textContent = appConfig.storePhone ? 'Telp: ' + appConfig.storePhone : '';
@@ -1595,8 +1600,102 @@ function showReceiptModal(inv) {
   document.getElementById('receiptModal').classList.add('active');
 }
 
+// SHOW STRUK LAYANAN GROOMING & PET HOTEL
+function showLayananReceiptModal(item) {
+  activeReceiptData = {...item, type: 'layanan'};
+  document.getElementById('rcStoreName').textContent = appConfig.storeName;
+  document.getElementById('rcStoreAddress').textContent = appConfig.storeAddress || '';
+  document.getElementById('rcStorePhone').textContent = appConfig.storePhone ? 'Telp: ' + appConfig.storePhone : '';
+  document.getElementById('rcInvId').textContent = 'SRV-' + String(item.id).slice(-4);
+  document.getElementById('rcTime').textContent = item.tglMasuk;
+  document.getElementById('rcCustomer').textContent = item.pemilik;
+  document.getElementById('rcPaymentMethod').textContent = item.status;
+
+  let detailItems = `
+    <div class="receipt-row"><span>${item.tipe} (${item.petNama})</span></div>
+    <div class="receipt-row"><span style="padding-left:8px;">Jadwal: ${item.tglMasuk} s/d ${item.tglKeluar}</span></div>
+  `;
+  if(item.kandang && item.kandang !== '-') {
+    detailItems += `<div class="receipt-row"><span style="padding-left:8px;">Kandang: ${item.kandang}</span></div>`;
+  }
+  detailItems += `<div class="receipt-row"><span style="padding-left:8px;">Biaya Service</span><span>${fmtRp(item.biaya)}</span></div>`;
+
+  document.getElementById('rcItemsList').innerHTML = detailItems;
+
+  document.getElementById('rcSubtotal').textContent = fmtRp(item.biaya);
+  document.getElementById('rcDiskon').textContent = '- Rp 0';
+  document.getElementById('rcDiskonRow').style.display = 'none';
+  document.getElementById('rcTotal').textContent = fmtRp(item.biaya);
+
+  document.getElementById('receiptModal').classList.add('active');
+}
+
+// FUNGSI KIRIM STRUK KE WHATSAPP
+function kirimStrukWA() {
+  if (!activeReceiptData) return;
+
+  const targetStr = activeReceiptData.pemilik || activeReceiptData.pembeli || '';
+  const digits = targetStr.match(/\d+/g);
+  let phone = digits ? digits.join('') : '';
+
+  if (!phone) {
+    const inputPhone = prompt("Nomor WA tidak ditemukan di nama pelanggan. Masukkan nomor WhatsApp pelanggan (cth: 081234567890):");
+    if (!inputPhone) return;
+    const inputDigits = inputPhone.match(/\d+/g);
+    phone = inputDigits ? inputDigits.join('') : '';
+  }
+
+  if (phone.startsWith('0')) {
+    phone = '62' + phone.slice(1);
+  }
+
+  let text = `*${appConfig.storeName.toUpperCase()}*\n`;
+  if (appConfig.storeAddress) text += `${appConfig.storeAddress}\n`;
+  text += `------------------------------------\n`;
+
+  if (activeReceiptData.type === 'layanan') {
+    text += `*STRUK SERVICE GROOMING & HOTEL*\n`;
+    text += `No. Service: SRV-${String(activeReceiptData.id).slice(-4)}\n`;
+    text += `Tanggal: ${activeReceiptData.tglMasuk}\n`;
+    text += `Pelanggan: ${activeReceiptData.pemilik}\n`;
+    text += `Status: ${activeReceiptData.status}\n`;
+    text += `------------------------------------\n`;
+    text += `• *Hewan:* ${activeReceiptData.petNama} (${hewanLabel[activeReceiptData.hewan] || activeReceiptData.hewan})\n`;
+    text += `• *Layanan:* ${activeReceiptData.tipe}\n`;
+    if (activeReceiptData.kandang && activeReceiptData.kandang !== '-') {
+      text += `• *Slot Kandang:* ${activeReceiptData.kandang}\n`;
+    }
+    text += `• *Jadwal:* ${activeReceiptData.tglMasuk} s/d ${activeReceiptData.tglKeluar}\n`;
+    text += `------------------------------------\n`;
+    text += `*TOTAL BIAYA: ${fmtRp(activeReceiptData.biaya)}*\n`;
+  } else {
+    text += `*STRUK PENJUALAN KASIR*\n`;
+    text += `No. Invoice: ${activeReceiptData.id}\n`;
+    text += `Tanggal: ${activeReceiptData.tanggal} ${activeReceiptData.waktu}\n`;
+    text += `Pelanggan: ${activeReceiptData.pembeli}\n`;
+    text += `Metode Bayar: ${activeReceiptData.metode || 'Tunai'}\n`;
+    text += `------------------------------------\n`;
+    activeReceiptData.items.forEach(i => {
+      text += `• ${i.nama} (${i.qty} x ${fmtRp(i.harga)}) = ${fmtRp(i.qty * i.harga)}\n`;
+    });
+    text += `------------------------------------\n`;
+    if (activeReceiptData.diskon > 0) {
+      text += `Subtotal: ${fmtRp(activeReceiptData.subtotal || activeReceiptData.total)}\n`;
+      text += `Diskon: -${fmtRp(activeReceiptData.diskon)}\n`;
+    }
+    text += `*TOTAL BAYAR: ${fmtRp(activeReceiptData.total)}*\n`;
+  }
+
+  text += `------------------------------------\n`;
+  text += `Terima kasih telah mempercayakan anabul Anda di *${appConfig.storeName}*! 🐾`;
+
+  const url = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`;
+  window.open(url, '_blank');
+}
+
 function closeReceiptModal() {
   document.getElementById('receiptModal').classList.remove('active');
+  activeReceiptData = null;
 }
 
 // LAYANAN GROOMING & PET HOTEL
@@ -1619,6 +1718,7 @@ function addLayanan() {
   const tipe = document.getElementById('l-tipe').value;
   const baru = {
     id: Date.now(),
+    type: 'layanan',
     petNama,
     hewan: document.getElementById('l-hewan').value,
     pemilik: document.getElementById('l-pemilik').value.trim() || 'Pemilik Umum',
@@ -1636,6 +1736,7 @@ function addLayanan() {
   ['l-pet','l-pemilik','l-kandang','l-biaya','l-tgl-masuk','l-tgl-keluar'].forEach(id => document.getElementById(id).value = '');
   toggleAddLayananForm();
   renderLayanan();
+  showLayananReceiptModal(baru);
   showToast('Booking service berhasil ditambahkan!');
 }
 
@@ -1676,6 +1777,8 @@ function renderLayanan() {
     if(item.status === 'Selesai') stClass = 'st-selesai';
     if(item.status === 'Batal') stClass = 'st-batal';
 
+    const itemJson = JSON.stringify(item).replace(/'/g, "&apos;");
+
     return `
     <tr>
       <td>
@@ -1689,6 +1792,7 @@ function renderLayanan() {
       <td><span class="status-badge ${stClass}">${item.status}</span></td>
       <td>
         <div style="display:flex; gap:4px; flex-wrap:wrap;">
+          <button class="btn btn-sm btn-ghost" onclick='showLayananReceiptModal(${itemJson})'>Struk</button>
           ${item.status === 'Booking' ? `<button class="btn btn-sm btn-ghost" onclick="updateStatusLayanan(${item.id}, 'Dalam Proses')">Proses</button>` : ''}
           ${item.status === 'Dalam Proses' ? `<button class="btn btn-sm" style="background:var(--green);" onclick="updateStatusLayanan(${item.id}, 'Selesai')">Selesai</button>` : ''}
           <button class="btn btn-sm btn-ghost" style="color:var(--red);" onclick="hapusLayanan(${item.id})">Hapus</button>
